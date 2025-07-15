@@ -1,0 +1,2030 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+  <title>Class Absentee Tracker</title>
+  <style>
+   :root {
+  --primary: #007aff;
+  --bg: #f2f2f7;
+  --text: #000;
+  --card: #fff;
+  --shadow: 0 4px 10px rgba(0, 0, 0, 0.1);
+}
+
+[data-theme="dark"] {
+  --bg: #1c1c1e;
+  --text: #fff;
+  --card: #2c2c2e;
+}
+
+* {
+  box-sizing: border-box;
+}
+
+body {
+  margin: 0;
+  font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, 'Helvetica Neue', sans-serif;
+  background-color: var(--bg);
+  color: var(--text);
+}
+
+.page {
+  display: none;
+  padding: 80px 16px 90px;
+}
+.page.active {
+  display: block;
+}
+
+h2 {
+  font-size: 24px;
+  margin-bottom: 10px;
+}
+
+
+input, textarea {
+  width: 100%;
+  padding: 12px;
+  margin: 10px 0;
+  border: 1px solid #ccc;
+  border-radius: 12px;
+  font-size: 16px;
+  background-color: #fff;
+  color: #000;
+}
+select {
+  width: 100%;
+  padding: 12px;
+  margin: 10px 0;
+  border: 1px solid #ccc;
+  border-radius: 12px;
+  font-size: 16px;
+  background-color: #fff;
+  color: #000;
+  appearance: auto;
+  -webkit-appearance: auto;
+  -moz-appearance: auto;
+}
+    
+
+button {
+  padding: 12px 20px;
+  background-color: var(--primary);
+  color: white;
+  border: none;
+  border-radius: 10px;
+  cursor: pointer;
+  margin: 8px 0;
+  font-size: 16px;
+}
+button:hover {
+  opacity: 0.9;
+}
+
+.delete-btn {
+  background-color: #ff3b30;
+  color: #fff;
+}
+.whatsapp-btn {
+  background-color: #25d366;
+  color: white;
+  font-weight: bold;
+}
+
+/* Sidebar */
+.sidebar {
+  position: fixed;
+  top: 0;
+  left: 0;
+  width: 0;
+  height: 100%;
+  background: var(--card);
+  overflow-x: hidden;
+  transition: 0.3s;
+  box-shadow: var(--shadow);
+  z-index: 2;
+  padding-top: 60px;
+}
+.sidebar.open {
+  width: 250px;
+}
+.sidebar button {
+  display: block;
+  background: none;
+  border: none;
+  width: 100%;
+  text-align: left;
+  padding: 15px 20px;
+  font-size: 16px;
+  cursor: pointer;
+  border-bottom: 1px solid #eee;
+  color: inherit;
+}
+
+/* Theme Toggle */
+.theme-toggle {
+  padding: 20px;
+}
+.theme-toggle label {
+  font-size: 14px;
+  color: inherit;
+}
+
+/* iOS Switch */
+.switch {
+  position: relative;
+  display: inline-block;
+  width: 50px;
+  height: 24px;
+  margin-left: 10px;
+}
+.switch input {
+  opacity: 0;
+  width: 0;
+  height: 0;
+}
+.slider {
+  position: absolute;
+  cursor: pointer;
+  top: 0; left: 0; right: 0; bottom: 0;
+  background-color: #ccc;
+  transition: .4s;
+  border-radius: 24px;
+}
+.slider:before {
+  position: absolute;
+  content: "";
+  height: 18px;
+  width: 18px;
+  left: 3px;
+  bottom: 3px;
+  background-color: white;
+  transition: .4s;
+  border-radius: 50%;
+}
+input:checked + .slider {
+  background-color: var(--primary);
+}
+input:checked + .slider:before {
+  transform: translateX(26px);
+}
+
+/* Menu Button */
+.menu-button {
+  position: fixed;
+  top: 15px;
+  left: 15px;
+  font-size: 24px;
+  background: var(--primary);
+  color: #fff;
+  border: none;
+  border-radius: 8px;
+  padding: 10px;
+  z-index: 999;
+  transition: top 0.3s ease;
+}
+.menu-button.hide {
+  top: -60px;
+}
+
+/* Bottom Navigation */
+.bottom-nav {
+  position: fixed;
+  bottom: 0;
+  width: 100%;
+  background: var(--card);
+  border-top: 1px solid #ccc;
+  display: flex;
+  justify-content: space-around;
+  padding: 6px 0;
+  box-shadow: 0 -2px 8px rgba(0, 0, 0, 0.1);
+  z-index: 10;
+}
+.bottom-nav button {
+  flex: 1;
+  background: none;
+  border: none;
+  color: var(--primary);
+  font-size: 12px;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  padding: 6px 0;
+  transition: background 0.2s;
+}
+.bottom-nav button:hover {
+  background-color: rgba(0, 122, 255, 0.1);
+  border-radius: 12px;
+}
+.bottom-nav button.active {
+  font-weight: bold;
+  color: #000;
+}
+.bottom-nav button span {
+  font-size: 20px;
+}
+
+/* Class Card Styling */
+.class-card {
+  background-color: var(--card);
+  box-shadow: var(--shadow);
+  padding: 16px;
+  border-radius: 14px;
+  margin-bottom: 12px;
+  transition: transform 0.2s;
+  cursor: pointer;
+}
+.class-card:hover {
+  transform: scale(1.02);
+}
+.class-card-title {
+  font-weight: bold;
+  font-size: 18px;
+  margin-bottom: 8px;
+}
+.class-card ul {
+  padding-left: 0;
+  list-style-type: none;
+}
+.class-card li {
+  font-size: 14px;
+}
+
+/* Full Class View */
+#fullClassPage ul {
+  list-style-type: none;
+  padding-left: 0;
+}
+#fullClassPage li {
+  padding: 6px 0;
+}
+
+/* Saved Absentees */
+.record-container {
+  background: var(--card);
+  padding: 16px;
+  border-radius: 14px;
+  box-shadow: var(--shadow);
+  margin-bottom: 14px;
+}
+.absent-text {
+  white-space: pre-wrap;
+  font-family: inherit;
+  font-size: 17px;
+  font-weight: 500;
+  background: var(--card);
+  padding: 8px;
+  border-radius: 8px;
+  margin-top: 8px;
+  margin-bottom: 8px;
+}
+
+/* Timetable Zoom/Pan */
+#timetableWidget {
+  touch-action: pan-x pan-y;
+  margin-top: 10px;
+  border-radius: 16px;
+  width: 100%;
+  height: 420px;
+  background-color: #fafafa;
+  background-size: contain;
+  background-position: center;
+  background-repeat: no-repeat;
+  border: 2px dashed #ccc;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  cursor: grab;
+  position: relative;
+  transition: border-color 0.3s;
+  touch-action: none;
+  user-select: none;
+}
+#timetableWidget:hover {
+  border-color: var(--primary);
+}
+#timetablePlaceholder {
+  color: #444;
+  font-size: 26px;
+  font-weight: bold;
+  text-align: center;
+  cursor: pointer;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  height: 100%;
+  width: 100%;
+  user-select: none;
+  pointer-events: auto; /* Make sure clicks pass through */
+}
+
+/* Analytics Page */
+.analytics-summary {
+  background: var(--card);
+  box-shadow: var(--shadow);
+  padding: 16px;
+  border-radius: 14px;
+  margin-top: 10px;
+  margin-bottom: 20px;
+}
+.analytics-summary p {
+  margin: 8px 0;
+  font-weight: bold;
+}
+.analytics-table {
+  width: 100%;
+  border-collapse: collapse;
+}
+.analytics-table th,
+.analytics-table td {
+  border: 1px solid #ccc;
+  padding: 10px;
+  text-align: left;
+}
+.analytics-table th {
+  background-color: #eaeaea;
+}
+
+/* Attendance Sheets Page */
+#attendanceSheets label {
+  font-weight: bold;
+  margin-top: 10px;
+  display: block;
+}
+#sheetExportStatus {
+  margin-top: 20px;
+  font-size: 14px;
+  font-weight: bold;
+  color: green;
+}
+#editClassSection input,
+#editClassSection textarea {
+  margin-top: 12px;
+}
+
+#fullClassPage button {
+  margin-top: 10px;
+}
+#editClassSection input,
+#editClassSection textarea {
+  margin-top: 12px;
+  width: 100%;
+  font-size: 16px;
+}
+
+#classDataInput {
+  height: 250px;  /* You can increase or decrease this value */
+  resize: vertical;
+  padding: 12px;
+  font-size: 16px;
+  line-height: 1.4;
+}
+
+#editClassSection textarea {
+  height: 350px;
+  resize: vertical;
+  padding: 12px;
+}
+
+#fullClassPage button {
+  margin-top: 10px;
+}
+#attendanceExportStatus {
+  margin-top: 15px;
+  font-weight: bold;
+  color: green;
+}
+.export-history {
+  margin-top: 10px;
+}
+.export-history-item {
+  background: var(--card);
+  padding: 12px 16px;
+  border-radius: 10px;
+  margin-bottom: 10px;
+  box-shadow: var(--shadow);
+  cursor: pointer;
+  transition: transform 0.2s ease;
+}
+.export-history-item:hover {
+  transform: scale(1.02);
+  background-color: #f0f8ff;
+  font-weight: bold;
+}
+.delete-history-btn {
+  float: right;
+  background-color: #ff3b30;
+  color: white;
+  border: none;
+  padding: 6px 10px;
+  border-radius: 6px;
+  cursor: pointer;
+  font-size: 14px;
+}
+.delete-history-btn:hover {
+  opacity: 0.8;
+}
+/* Export History Styling */
+#exportHistoryList {
+  margin-top: 20px;
+}
+
+.export-history-item {
+  background-color: var(--card);
+  padding: 16px;
+  border-radius: 12px;
+  box-shadow: var(--shadow);
+  margin-bottom: 12px;
+  font-size: 16px;
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  min-height: 60px; /* Increased height */
+}
+
+.export-history-item span {
+  flex: 1;
+  font-weight: 500;
+}
+
+.delete-history-btn {
+  background-color: transparent;
+  border: none;
+  font-size: 22px;
+  cursor: pointer;
+  color: #ff3b30;
+  transition: transform 0.2s;
+}
+.delete-history-btn:hover {
+  transform: scale(1.2);
+}
+.class-delete-btn {
+  padding: 8px 
+.class-delete-btn {
+  position: absolute;
+  top: 50%;
+  right: 10px;
+  transform: translateY(-50%);
+  background-color: #ff3b30;
+  color: white;
+  border: none;
+  font-size: 18px;
+  border-radius: 50%;
+  width: 44px;
+  height: 44px;
+  cursor: pointer;
+  box-shadow: var(--shadow);
+  z-index: 1;
+}
+.class-delete-btn:hover {
+  opacity: 0.9;
+}
+.profile-card {
+  background: var(--card-bg);
+  padding: 20px;
+  margin: 20px auto;
+  max-width: 400px;
+  border-radius: 12px;
+  box-shadow: 0 2px 10px rgba(0,0,0,0.1);
+  font-size: 16px;
+  line-height: 1.6;
+}
+.profile-card p {
+  margin: 10px 0;
+}
+.profile-container {
+  display: flex;
+  gap: 20px;
+  flex-wrap: wrap;
+  padding: 20px;
+}
+
+.profile-photo-wrapper {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+}
+
+.profile-photo-wrapper img {
+  width: 70px;
+  height: 70px;
+  border-radius: 50%;
+  object-fit: cover;
+  border: 2px solid #888;
+  background-color: #eee;
+  margin-bottom: 8px;
+}
+
+.profile-fields label {
+  display: block;
+  margin-bottom: 10px;
+}
+  
+#userProfilePhoto {
+  width: 30px !important;
+  height: 30px !important;
+  border-radius: 50% !important;
+  object-fit: smaller !important;
+  border: 2px solid #888 !important;
+  background-color: #eee !important;
+  margin-bottom: 10px !important;
+}
+<style>
+  input, button {
+    font-size: 16px;
+    border-radius: 6px;
+    border: 1px solid #ccc;
+  }
+
+  button:hover {
+    cursor: pointer;
+    opacity: 0.9;
+  }
+
+#timetableWidget {
+  touch-action: none;
+  user-select: none;
+  cursor: grab;
+  background-repeat: no-repeat;
+  background-position: center;
+  background-size: contain;
+  overflow: hidden;
+}
+#timetableWidget:active {
+  cursor: grabbing;
+}
+
+</style>
+
+</style>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/xlsx/0.18.5/xlsx.full.min.js"></script>
+</head>
+  <body data-theme="light">
+    <!-- LOGIN/REGISTER OVERLAY -->
+<div id="authOverlay" style="position:fixed; top:0; left:0; width:100vw; height:100vh; background:white; z-index:9999; display:flex; align-items:center; justify-content:center;">
+  <div style="max-width:350px; width:90%; background:#f0f0f0; padding:20px; border-radius:10px; box-shadow:0 0 15px rgba(0,0,0,0.2); text-align:center;">
+    <h2 id="authTitle">🔐 Login</h2>
+
+    <div id="loginForm">
+      <input id="loginUserInput" type="text" placeholder="USER NAME or USER ID" style="width:100%; padding:10px; margin:8px 0;" />
+      <input id="loginPassInput" type="password" placeholder="PASSWORD" style="width:100%; padding:10px; margin:8px 0;" />
+      <button onclick="handleLogin()" style="width:100%; padding:10px; margin-top:10px;">Login</button>
+      <p style="margin:10px 0;"><a href="#" onclick="toggleAuthMode()">Create Account</a></p>
+      <button onclick="handleGoogleLogin()" style="background:#4285F4; color:white; border:none; padding:10px; width:100%; margin-top:5px;">Login with Google</button>
+    </div>
+
+    <div id="registerForm" style="display:none;">
+      <input id="regName" type="text" placeholder="USER NAME" style="width:100%; padding:10px; margin:8px 0;" />
+      <input id="regGmail" type="email" placeholder="GMAIL ACCOUNT" style="width:100%; padding:10px; margin:8px 0;" />
+      <input id="regPass" type="password" placeholder="PASSWORD" style="width:100%; padding:10px; margin:8px 0;" />
+      <button onclick="handleRegister()" style="width:100%; padding:10px; margin-top:10px;">Register</button>
+      <p style="margin:10px 0;"><a href="#" onclick="toggleAuthMode()">Already have an account?</a></p>
+    </div>
+  </div>
+</div>
+
+  <!-- Sidebar -->
+  <div id="sidebar" class="sidebar">
+    <button onclick="showPage('database')">🌐 Database</button>
+    <button onclick="showPage('analytics')">📊 Analytics</button>   
+    <button onclick="showPage('attendance')">📥 Attendance</button>
+    <button onclick="showPage('userProfilePage')">👤 User Profile</button>
+    <button onclick="showPage('settings')">⚙️ Settings</button>
+    <div style="padding: 20px;">
+      <p><strong>APP CREATORS</strong></p>
+      <p>Shankara Vijayan T V</p>
+      <p>Joel George Philip</p>
+    </div>
+    <div class="theme-toggle">
+      <label for="themeToggle">🌗 Theme:</label>
+      <label class="switch">
+        <input type="checkbox" id="themeToggle">
+        <span class="slider"></span>
+      </label>
+    </div>
+  </div>
+
+  <button class="menu-button" onclick="toggleMenu()">☰</button>
+
+  <!-- Home Page -->
+  <div id="home" class="page active">
+    <h2>🏠 Home Page</h2>
+    <p id="currentDate"></p>
+    <p id="currentDay"></p>
+    <p id="currentTime"></p>
+    
+<select id="classNameHome">
+  <option value="">Select Class</option>
+  <option value="Class A">Class A</option>
+  <option value="Class B">Class B</option>
+</select>
+
+    <input type="text" id="subjectName" placeholder="Subject Name">
+    <input type="number" id="classHour" placeholder="Class Hour">
+    <textarea id="absentRollNumbers" placeholder="Enter Roll Numbers (e.g. 1,2,3)"></textarea>
+    <button onclick="saveAbsentees()">Save Absentees</button>
+    <h3>📌 Today's Absentees</h3>
+    <div id="todaysAbsentees"></div>
+  </div>
+
+  <!-- Class Data Page -->
+  <div id="classData" class="page">
+    <h2>📋 Class Data</h2>
+    <h3>📷 Timetable</h3>
+    <!-- Timetable Upload Section -->
+<label for="hiddenTimetableInput" style="width: 100%;">
+  <div id="timetableWidget">
+  <div id="timetablePlaceholder">📤<br>Click to Upload Timetable</div>
+  </div>
+</label>
+
+
+<button onclick="document.getElementById('hiddenTimetableInput').click()" style="margin-top:10px;">📤 Upload Timetable (Android Friendly)</button>
+
+<input type="file" id="hiddenTimetableInput" accept="image/*" style="display:none;" onchange="uploadTimetable(event)">
+
+    <button class="delete-btn" onclick="removeTimetable()">🗑️ Remove Image</button>
+
+    <input type="text" id="classSemesterInput" placeholder="Enter Semester (e.g., Semester 2)">
+    <input type="text" id="classDataName" placeholder="Class Name and Year">
+    <textarea id="classDataInput" placeholder="Enter RollNo Name (One per Line)"></textarea>
+    <button onclick="saveClassData()">Save Class Data</button>
+    <button onclick="clearClassData()">Clear Students Data</button>
+
+    <h3>📌 Saved Class Data</h3>
+    <div id="savedClassData"></div>
+  </div>
+
+ <!-- Full Class View Page -->
+<div id="fullClassPage" class="page">
+  <button onclick="backToClassTiles()">🔙 Back</button>
+
+  <!-- Edit Section at Top -->
+  <div id="editClassSection" style="display:none; margin-top: 10px;">
+    <input type="text" id="editSemesterInput" placeholder="Enter Semester">
+    <input type="text" id="editClassName" placeholder="Edit Class Name">
+    <textarea id="editClassData" placeholder="Edit RollNo Name (one per line)"></textarea>
+    <button onclick="saveEditedClass()">💾 Save Changes</button>
+    <button class="delete-btn" onclick="cancelEdit()">❌ Cancel</button>
+  </div>
+
+  <!-- Edit Button at Top -->
+  <button onclick="editClass()">✏️ Edit Class</button>
+
+  <!-- Title + List -->
+  <h2 id="fullClassTitle"></h2>
+  <ul id="fullClassList"></ul>
+</div>
+
+  <!-- Saved Absentees Page -->
+  <div id="savedRecords" class="page">
+    <h2>📂 Saved Absentees Records</h2>
+    <input type="date" id="filterDate">
+    <input type="number" id="filterHour" placeholder="Hour">
+    
+<select id="filterClassName">
+  <option value="">All Classes</option>
+  <option value="Class A">Class A</option>
+  <option value="Class B">Class B</option>
+
+      <option value="">All Classes</option>
+    </select>
+    <button onclick="filterAbsentees()">🔍 Filter</button>
+    <button onclick="clearFilters()">🧹 Clear Filters</button>
+    <button class="delete-btn" onclick="deleteAllAbsentees()">🗑️ Delete All Records</button>
+    <div id="savedAbsenteeList"></div>
+    <div class="page" id="savedAbsentees">
+  <h2>📌 Saved Absentees</h2>
+
+  <div style="margin-bottom: 10px;">
+    <label for="filterDate">📅 Date:</label>
+    <input type="date" id="filterDate">
+
+    <label for="filterHour">⏰ Hour:</label>
+    <input type="text" id="filterHour" placeholder="e.g. 1">
+
+    <label for="filterClassName">🏫 Class:</label>
+    
+<select id="filterClassName">
+  <option value="">All Classes</option>
+  <option value="Class A">Class A</option>
+  <option value="Class B">Class B</option>
+</select>
+
+    <button onclick="filterAbsentees()">🔍 Apply Filters</button>
+    <button onclick="clearFilters()">❌ Clear Filters</button>
+    <button class="delete-btn" onclick="deleteAllAbsentees()">🗑️ Delete All</button>
+  </div>
+
+  <!-- ✅ THIS LINE IS VERY IMPORTANT -->
+  <div id="savedAbsenteeList"></div>
+</div>
+
+  </div>
+
+ <!-- Analytics Page -->
+<div id="analytics" class="page">
+  <h2>📊 Attendance Analytics</h2>
+  
+<select id="analyticsClassDropdown">
+  <option value="">Select Class</option>
+  <option value="Class A">Class A</option>
+  <option value="Class B">Class B</option>
+</select>
+
+  <input type="text" id="analyticsRollInput" placeholder="Enter Student Roll No">
+  
+<select id="analyticsSubjectDropdown">
+  <option value="">All Subjects</option>
+  <option value="Math">Math</option>
+  <option value="Science">Science</option>
+
+    <option value="">All Subjects</option>
+  </select>
+  <button onclick="generateAnalytics()">📈 Generate</button>
+  <div id="analyticsResult"></div>
+</div>
+
+<!-- ⬇️ Add user profile block here -->
+<div id="userProfilePage" class="page">
+  <h2>👤 User Profile</h2>
+  <div class="profile-container">
+    <div class="profile-photo-wrapper">
+     <div id="profilePhotoContainer" class="profile-photo-container">
+ <img id="profilePhoto" src="" alt="Profile Photo" class="profile-photo"
+     style="width: 90px; height: 90px; border-radius: 50%; object-fit: cover;" />
+</div>
+<input type="file" id="profilePhotoInput" accept="image/*" style="display: none;" />
+    </div>
+    <div class="profile-fields">
+      <label>Name: <input type="text" id="editUserName" /></label><br>
+      <label>User ID: <input type="text" id="editUserID" disabled /></label><br>
+      <button onclick="saveUserProfile()">💾 Save Changes</button>
+    </div>
+  </div>
+</div>
+  
+  <!-- SETTINGS Page -->
+<div id="settings" class="page" style="display: none;">
+  <h2>Settings</h2>
+  <div id="googleAccountSection">
+    <p><strong>Google Account:</strong> <span id="googleEmailDisplay">Not Logged In</span></p>
+    <button id="addGoogleBtn" onclick="handleAddGoogleAccount()">Add Account</button>
+  </div>
+  <div id="passwordSection">
+    <p><strong>Password:</strong> ********</p>
+    <button onclick="goToChangePassword()">Change Password</button>
+  </div>
+  <button id="logoutButton" style="margin-top: 20px; padding: 10px; background: #f44336; color: white; border: none; border-radius: 6px; cursor: pointer;">
+  🚪 Log Out
+</button>
+</div>
+
+<!-- CHANGE PASSWORD Page -->
+<div id="changePasswordPage" class="page" style="display: none;">
+  <h2>Change Password</h2>
+  <input type="password" id="newPassword" placeholder="New Password" />
+  <button onclick="sendPasswordChangePIN()">Send PIN to Gmail</button>
+  <input type="text" id="passwordChangePin" placeholder="Enter PIN" />
+  <button onclick="saveNewPassword()">Save New Password</button>
+</div>
+  
+  <!-- Database Page -->
+  <div id="database" class="page">
+    <h2>🌐 Database</h2>
+    <p>Enter your API URL:</p>
+    <input type="text" id="apiUrl" placeholder="https://api.example.com/save">
+    <button onclick="connectToAPI()">Connect</button>
+    <div id="apiResponse"></div>
+  </div>
+   
+  <!-- Attendance Export Page -->
+<div id="attendance" class="page">
+  <h2>📥 Attendance Sheets</h2>
+
+  <label for="attendanceClassDropdown">Select Class:</label>
+  
+<select id="attendanceClassDropdown" onchange="populateSubjectDropdown()">
+  <option value="">-- Select Class --</option>
+  <option value="Class A">Class A</option>
+  <option value="Class B">Class B</option>
+</select>
+
+
+  <label for="attendanceSubjectDropdown">Select Subject:</label>
+  
+<select id="attendanceSubjectDropdown">
+  <option value="">-- Select Subject --</option>
+  <option value="Math">Math</option>
+  <option value="Science">Science</option>
+</select>
+
+
+  <button onclick="exportAttendanceToExcel()">EXPORT TO EXCEL</button>
+  <div id="attendanceExportStatus"></div>
+  <!-- 📜 Export History Section -->
+<h3 style="margin-top: 30px;">📜 Export History</h3>
+<div id="exportHistoryList" class="export-history"></div>
+
+</div>
+  
+  <!-- Bottom Navigation -->
+  <div class="bottom-nav">
+    <button class="active" onclick="showPage('home'); setActiveNav(this)"><span>🏠</span>Home</button>
+    <button onclick="showPage('classData'); setActiveNav(this)"><span>📋</span>Class</button>
+    <button onclick="showPage('savedRecords'); setActiveNav(this)"><span>📂</span>Saved</button>
+  </div>
+    
+  <script>
+    let classDataMap = JSON.parse(localStorage.getItem('classDataMap')) || {};
+let absenteeRecords = JSON.parse(localStorage.getItem('absenteeRecords')) || [];
+let recentHomeAbsentees = JSON.parse(localStorage.getItem('recentHomeAbsentees')) || [];
+
+const defaultProfileImage = "https://cdn-icons-png.flaticon.com/512/149/149071.png";
+
+function toggleMenu() {
+  document.getElementById('sidebar').classList.toggle('open');
+}
+
+function showPage(page) {
+  document.querySelectorAll('.page').forEach(p => p.classList.remove('active'));
+  document.getElementById(page).classList.add('active');
+  document.getElementById('sidebar').classList.remove('open');
+}
+
+function setActiveNav(btn) {
+  document.querySelectorAll('.bottom-nav button').forEach(b => b.classList.remove('active'));
+  btn.classList.add('active');
+}
+
+// Hide menu button on scroll
+let lastScrollTop = 0;
+window.addEventListener('scroll', () => {
+  const menuBtn = document.querySelector('.menu-button');
+  const st = window.pageYOffset || document.documentElement.scrollTop;
+  menuBtn.classList.toggle('hide', st > lastScrollTop);
+  lastScrollTop = st <= 0 ? 0 : st;
+});
+
+function populateClassDropdown() {
+  const dropdowns = [
+    document.getElementById('classNameHome'),
+    document.getElementById('filterClassName'),
+    document.getElementById('analyticsClassDropdown')
+  ];
+  dropdowns.forEach(dropdown => {
+    if (!dropdown) return;
+    dropdown.innerHTML = '<option value="">All Classes</option>';
+    for (const cls in classDataMap) {
+      const option = document.createElement('option');
+      option.value = cls;
+      option.textContent = cls;
+      dropdown.appendChild(option);
+    }
+  });
+
+  // Populate subject dropdown in analytics
+  const subjectDropdown = document.getElementById('analyticsSubjectDropdown');
+  if (subjectDropdown) {
+    const subjects = [...new Set(absenteeRecords.map(r => r.subject))];
+    subjectDropdown.innerHTML = '<option value="">All Subjects</option>';
+    subjects.forEach(sub => {
+      const opt = document.createElement('option');
+      opt.value = sub;
+      opt.textContent = sub;
+      subjectDropdown.appendChild(opt);
+    });
+  }
+}
+
+function saveClassData() {
+  const className = document.getElementById('classDataName').value.trim();
+  const input = document.getElementById('classDataInput').value.trim();
+  if (!input || !className) return alert("Enter both class name and data!");
+  const data = input.split('\n').map(line => {
+    const [rollNo, ...nameParts] = line.trim().split(' ');
+    return { rollNo, name: nameParts.join(' ') };
+  });
+  const semester = document.getElementById('classSemesterInput').value.trim();
+classDataMap[className] = { students: data, semester };
+  localStorage.setItem('classDataMap', JSON.stringify(classDataMap));
+  renderClassTiles();
+  populateClassDropdown();
+  document.getElementById('classDataInput').value = '';
+document.getElementById('classSemesterInput').value = ''; // ✅ Clear semester field too
+document.getElementById('classDataName').value = ''; // ✅ Clear class name and year field too  
+alert("Class Data Saved!");
+}
+
+function renderClassTiles() {
+  const container = document.getElementById('savedClassData');
+  container.innerHTML = '';
+  for (const cls in classDataMap) {
+    const students = classDataMap[cls].students || classDataMap[cls];
+const semester = classDataMap[cls].semester || 'Unknown';
+const previewList = students.slice(0, 4).map(s => `<li>${s.rollNo} ${s.name}</li>`).join('');
+    const card = document.createElement('div');
+    card.className = 'class-card';
+    card.innerHTML = `
+  <div style="position: relative;">
+    <div class="class-card-title">${cls}</div>
+    <ul>${previewList}</ul>
+    <button 
+      class="class-delete-btn"
+      onclick="deleteClass('${cls}', event)"
+      title="Delete Class"
+    >
+      🗑️
+    </button>
+  </div>`;
+   card.innerHTML = `
+  <div style="position: relative;">
+    <div class="class-card-title">${cls}</div>
+    <div style="font-size: 16px; font-weight: 600; margin-bottom: 6px;">📘 Semester: ${semester}</div>
+    <ul>${previewList}</ul>
+    <button class="class-delete-btn" onclick="deleteClass('${cls}', event)">🗑️</button>
+  </div>`;
+ 
+    card.onclick = () => showFullClass(cls);
+    container.appendChild(card);
+  }
+}
+
+function deleteClass(className, event) {
+  event.stopPropagation(); // Prevent triggering the card click
+  if (!confirm(`Are you sure you want to delete "${className}"?`)) return;
+
+  delete classDataMap[className];
+  localStorage.setItem('classDataMap', JSON.stringify(classDataMap));
+  renderClassTiles();
+  populateClassDropdown();
+}
+
+function showFullClass(className) {
+  document.getElementById('fullClassTitle').innerText = `👥 ${className} - Full Student List`;
+  const list = document.getElementById('fullClassList');
+  list.innerHTML = '';
+  const data = classDataMap[className];
+const semester = data.semester || 'Unknown';
+const students = data.students || data;
+
+document.getElementById('fullClassTitle').innerText = `👥 ${className} - Full Student List\n📘 Semester: ${semester}`;
+
+students.forEach(s => {
+    const li = document.createElement('li');
+    li.textContent = `${s.rollNo} ${s.name}`;
+    list.appendChild(li);
+  });
+  showPage('fullClassPage');
+}
+function backToClassTiles() {
+  showPage('classData');
+}
+let currentEditingClass = null;
+
+function editClass() {
+  const title = document.getElementById('fullClassTitle').innerText;
+  const className = title.replace('👥 ', '').split(' - ')[0];
+  currentEditingClass = className;
+
+  const classInfo = classDataMap[className];
+  const students = classInfo.students || classInfo;
+  const semester = classInfo.semester || '';
+
+  // Set values in form
+  document.getElementById('editClassName').value = className;
+  document.getElementById('editSemesterInput').value = semester;
+  document.getElementById('editClassData').value = students.map(s => `${s.rollNo} ${s.name}`).join('\n');
+
+  document.getElementById('editClassSection').style.display = 'block';
+}
+
+function saveEditedClass() {
+  const newName = document.getElementById('editClassName').value.trim();
+  const newSemester = document.getElementById('editSemesterInput').value.trim();
+  const newData = document.getElementById('editClassData').value.trim();
+  if (!newName || !newData) return alert("Class name and student data are required.");
+
+  const parsedData = newData.split('\n').map(line => {
+    const [rollNo, ...nameParts] = line.trim().split(' ');
+    return { rollNo, name: nameParts.join(' ') };
+  });
+
+  // If class name changed
+  if (newName !== currentEditingClass) {
+    delete classDataMap[currentEditingClass];
+  }
+
+  classDataMap[newName] = {
+    students: parsedData,
+    semester: newSemester
+  };
+
+  localStorage.setItem('classDataMap', JSON.stringify(classDataMap));
+  currentEditingClass = null;
+
+  document.getElementById('editClassSection').style.display = 'none';
+  alert("Class updated successfully!");
+
+  renderClassTiles();
+  populateClassDropdown();
+  showFullClass(newName);
+}
+
+function cancelEdit() {
+  currentEditingClass = null;
+  document.getElementById('editClassSection').style.display = 'none';
+}
+
+function clearClassData() {
+  if (confirm("Clear all class data?")) {
+    classDataMap = {};
+    localStorage.setItem('classDataMap', JSON.stringify(classDataMap));
+    renderClassTiles();
+    populateClassDropdown();
+  }
+}
+
+function saveAbsentees() {
+  const className = document.getElementById('classNameHome').value;
+document.getElementById('classNameHome').value = ''; // ✅ Clear classNameHome field too  
+  if (!className) {
+    alert("❌ Please select a class before saving absentees.");
+    return;
+  }
+
+  const subject = document.getElementById('subjectName').value;
+  const hour = document.getElementById('classHour').value;
+  const inputList = document.getElementById('absentRollNumbers').value.split(',').map(n => n.trim());
+document.getElementById('subjectName').value = ''; // ✅ Clear subjectName field too  
+document.getElementById('classHour').value = ''; // ✅ Clear classHour field too  
+document.getElementById('absentRollNumbers').value = ''; // ✅ Clear absentRollNumbers field too  
+  const date = new Date();
+  const recordDate = date.toLocaleDateString('en-IN');
+  const recordDay = date.toLocaleString('en-IN', { weekday: 'long' });
+
+  const students = (classDataMap[className] || {}).students || [];
+  const fullRolls = students.map(s => s.rollNo);
+
+  const matchedRolls = [];
+
+  inputList.forEach(input => {
+    // Clean input and match last 2 or 3 digits
+    const formattedInput = input.padStart(3, '0'); // ensures "1" becomes "001", "97" becomes "097"
+    
+    // Try 3-digit match
+    let match = fullRolls.find(r => r.endsWith(formattedInput));
+    
+    // If not found, try 2-digit match (last 2 characters)
+    if (!match && formattedInput.length >= 2) {
+      match = fullRolls.find(r => r.endsWith(formattedInput.slice(-2)));
+    }
+
+    if (match) matchedRolls.push(match);
+  });
+
+  const absenteesText = matchedRolls.map(r => {
+    const s = students.find(st => st.rollNo === r);
+    return `${r} ${s ? s.name : '(Not Found)'}`;
+  }).join('\n');
+
+  const recordHTML = `<div class="record-container">
+    <strong>${recordDate} (${recordDay})</strong>
+    <p>📚 Subject: ${subject} | ⏰ Hour: ${hour} | 📚 Class: ${className}</p>
+    <div class="absent-text">${absenteesText}</div>
+    <button class="whatsapp-btn" onclick="shareWhatsApp(\`${recordDate}\`, \`${recordDay}\`, \`${subject}\`, \`${hour}\`, \`${absenteesText}\`)">📤 Share to WhatsApp</button>
+  </div>`;
+
+  // Prepend to recentHomeAbsentees
+  recentHomeAbsentees.unshift({
+    date: recordDate,
+    day: recordDay,
+    className,
+    subject,
+    hour,
+    text: absenteesText
+  });
+  recentHomeAbsentees = recentHomeAbsentees.slice(0, 15);
+  localStorage.setItem('recentHomeAbsentees', JSON.stringify(recentHomeAbsentees));
+  renderRecentHomeAbsentees();
+
+  absenteeRecords.push({
+    date: recordDate,
+    day: recordDay,
+    className,
+    subject,
+    hour,
+    absentRollNumbers: matchedRolls
+  });
+
+  localStorage.setItem('absenteeRecords', JSON.stringify(absenteeRecords));
+  renderSavedAbsentees(absenteeRecords);
+
+  // Clear input
+  document.getElementById('absentRollNumbers').value = '';
+}
+
+function renderRecentHomeAbsentees() {
+  const container = document.getElementById('todaysAbsentees');
+  container.innerHTML = '';
+  recentHomeAbsentees.forEach(r => {
+    container.innerHTML += `<div class="record-container">
+      <strong>${r.date} (${r.day})</strong>
+      <p>📚 Subject: ${r.subject} | ⏰ Hour: ${r.hour} | 📚 Class: ${r.className}</p>
+      <div class="absent-text">${r.text}</div>
+      <button class="whatsapp-btn" onclick="shareWhatsApp('${r.date}', '${r.day}', '${r.subject}', '${r.hour}', \`${r.text}\`)">📤 Share to WhatsApp</button>
+    </div>`;
+  });
+}
+
+function shareWhatsApp(date, day, subject, hour, absenteesText) {
+  const message = `Absentees for ${subject}\nHour: ${hour}\nDATE: ${date}\nDAY: ${day}\n\n${absenteesText}`;
+  const encoded = encodeURIComponent(message);
+  const url = `https://wa.me/?text=${encoded}`;
+  window.open(url, '_blank');
+}
+
+function renderSavedAbsentees(records) {
+  const list = document.getElementById('savedAbsenteeList');
+  list.innerHTML = '';
+
+  const reversed = [...records].reverse(); // reverse to show newest first
+
+  reversed.forEach((r, i) => {
+    const index = records.length - 1 - i; // get correct original index for deletion
+    const students = (classDataMap[r.className] || {}).students || [];
+const text = r.absentRollNumbers.map(num => {
+  const s = students.find(st => st.rollNo === num);
+  return `${num} ${s ? s.name : '(Not Found)'}`;
+}).join('\n');
+    const html = `<div class="record-container">
+      <strong>${r.date} (${r.day})</strong>
+      <p>📚 Subject: ${r.subject} | ⏰ Hour: ${r.hour} | 📚 Class: ${r.className}</p>
+      <div class="absent-text">${text}</div>
+      <button class="delete-btn" onclick="deleteAbsenteeRecord(${index})">🗑️ Delete</button>
+    </div>`;
+    list.innerHTML += html;
+  });
+}
+
+function deleteAbsenteeRecord(index) {
+  if (confirm("Delete this record?")) {
+    absenteeRecords.splice(index, 1);
+    localStorage.setItem('absenteeRecords', JSON.stringify(absenteeRecords));
+    renderSavedAbsentees(absenteeRecords);
+  }
+}
+
+function deleteAllAbsentees() {
+  if (confirm("Are you sure you want to delete ALL absentee records?")) {
+    absenteeRecords = [];
+    localStorage.setItem('absenteeRecords', JSON.stringify(absenteeRecords));
+    renderSavedAbsentees([]);
+  }
+}
+
+function filterAbsentees() {
+  const d = document.getElementById('filterDate').value;
+  const h = document.getElementById('filterHour').value;
+  const c = document.getElementById('filterClassName').value;
+  const formattedDate = d ? new Date(d).toLocaleDateString('en-IN') : null;
+
+  const filtered = absenteeRecords.filter(r => {
+    return (!formattedDate || r.date === formattedDate) &&
+           (!h || r.hour === h) &&
+           (!c || r.className === c);
+  });
+  renderSavedAbsentees(filtered);
+}
+
+function clearFilters() {
+  document.getElementById('filterDate').value = '';
+  document.getElementById('filterHour').value = '';
+  document.getElementById('filterClassName').value = '';
+  renderSavedAbsentees(absenteeRecords);
+}
+
+function connectToAPI() {
+  const url = document.getElementById('apiUrl').value;
+  if (!url) return alert("Enter API URL");
+  document.getElementById('apiResponse').innerText = "Connecting to API at: " + url;
+}
+
+function uploadTimetable(event) {
+  const file = event.target.files[0];
+  if (!file) return;
+  const reader = new FileReader();
+  reader.onload = () => {
+    localStorage.setItem('timetableImage', reader.result);
+    const widget = document.getElementById('timetableWidget');
+    widget.style.backgroundImage = `url(${reader.result})`;
+    widget.style.backgroundSize = `${scale * 100}% auto`;
+    document.getElementById('timetablePlaceholder').style.display = 'none';
+  };
+  reader.readAsDataURL(file);
+}
+
+function removeTimetable() {
+  if (confirm("Remove uploaded timetable image?")) {
+    localStorage.removeItem('timetableImage');
+    const widget = document.getElementById('timetableWidget');
+    widget.style.backgroundImage = '';
+    document.getElementById('timetablePlaceholder').style.display = 'block';
+  }
+}
+
+// Pan/Zoom
+let isPanning = false, startX = 0, startY = 0, lastX = 0, lastY = 0;
+let scale = 1;
+let startDistance = 0;
+let initialScale = 1;
+
+function startPan(e) {
+  e.preventDefault();
+  isPanning = true;
+  const touch = e.touches ? e.touches[0] : e;
+  startX = touch.clientX - lastX;
+  startY = touch.clientY - lastY;
+  document.addEventListener('mousemove', pan);
+  document.addEventListener('mouseup', stopPan);
+  document.addEventListener('touchmove', pan);
+  document.addEventListener('touchend', stopPan);
+}
+function pan(e) {
+  if (!isPanning) return;
+  const touch = e.touches ? e.touches[0] : e;
+  lastX = touch.clientX - startX;
+  lastY = touch.clientY - startY;
+  const widget = document.getElementById('timetableWidget');
+  widget.style.backgroundPosition = `${lastX}px ${lastY}px`;
+}
+function stopPan() {
+  isPanning = false;
+  document.removeEventListener('mousemove', pan);
+  document.removeEventListener('mouseup', stopPan);
+  document.removeEventListener('touchmove', pan);
+  document.removeEventListener('touchend', stopPan);
+}
+
+const widget = document.getElementById('timetableWidget');
+
+// Get distance between two touches
+function getDistance(touch1, touch2) {
+  const dx = touch2.clientX - touch1.clientX;
+  const dy = touch2.clientY - touch1.clientY;
+  return Math.sqrt(dx * dx + dy * dy);
+}
+
+// Detect pinch start
+widget.addEventListener('touchstart', function (e) {
+  if (e.touches.length === 2) {
+    startDistance = getDistance(e.touches[0], e.touches[1]);
+    initialScale = scale;
+  }
+}, { passive: false });
+
+// Handle pinch zoom
+widget.addEventListener('touchmove', function (e) {
+  if (e.touches.length === 2) {
+    e.preventDefault();
+    const newDistance = getDistance(e.touches[0], e.touches[1]);
+    const zoomFactor = newDistance / startDistance;
+    scale = Math.min(Math.max(initialScale * zoomFactor, 1), 5); // Limit zoom 1x to 5x
+    widget.style.backgroundSize = `${scale * 100}% auto`;
+  }
+}, { passive: false });
+
+function resetZoom() {
+  scale = 1;
+  lastX = 0;
+  lastY = 0;
+  const widget = document.getElementById('timetableWidget');
+  widget.style.backgroundSize = `100% auto`; // 👈 this resets zoom
+  widget.style.backgroundPosition = `center`;
+}
+
+// Theme Toggle
+const themeToggle = document.getElementById('themeToggle');
+themeToggle.addEventListener('change', () => {
+  document.body.setAttribute('data-theme', themeToggle.checked ? 'dark' : 'light');
+});
+
+function generateAnalytics() {
+  const cls = document.getElementById('analyticsClassDropdown').value;
+  const roll = document.getElementById('analyticsRollInput').value.trim();
+  const subject = document.getElementById('analyticsSubjectDropdown').value;
+
+  if (!cls || !roll) return alert("Select class and enter roll number.");
+  const students = (classDataMap[cls] || {}).students || [];
+const student = students.find(s => s.rollNo === roll);
+  if (!student) return alert("Student not found.");
+
+  let records = absenteeRecords.filter(r => r.className === cls);
+  if (subject) records = records.filter(r => r.subject === subject);
+
+  const totalClasses = records.length;
+  const absentClasses = records.filter(r => r.absentRollNumbers.includes(roll));
+  const percentage = totalClasses ? ((totalClasses - absentClasses.length) / totalClasses * 100).toFixed(2) : "0.00";
+
+  let html = `<div class="analytics-summary">
+    <p>👤 Student: ${roll} ${student.name}</p>
+    <p>📊 Total Classes${subject ? ` (${subject})` : ''}: ${totalClasses}</p>
+    <p>❌ Total Absent: ${absentClasses.length}</p>
+    <p>✅ Attendance %: ${percentage}%</p>
+  </div>`;
+
+  if (absentClasses.length) {
+    html += `<table class="analytics-table">
+      <thead><tr><th>Date</th><th>Day</th><th>Subject</th><th>Hour</th></tr></thead><tbody>`;
+    absentClasses.forEach(r => {
+      html += `<tr><td>${r.date}</td><td>${r.day}</td><td>${r.subject}</td><td>${r.hour}</td></tr>`;
+    });
+    html += `</tbody></table>`;
+  }
+  document.getElementById('analyticsResult').innerHTML = html;
+}
+
+function exportAttendanceSheet() {
+  const className = document.getElementById('sheetClassDropdown').value;
+  const subject = document.getElementById('sheetSubjectInput').value.trim();
+  if (!className || !subject) return alert("Select class and enter subject.");
+
+  const students = (classDataMap[className] || {}).students || [];
+  if (!students.length) return alert("No students found in this class.");
+
+  const month = new Date().toLocaleString('default', { month: 'long' });
+
+  // Get all dates this subject was taken for this class
+  const subjectRecords = absenteeRecords.filter(r => r.className === className && r.subject.toLowerCase() === subject.toLowerCase());
+
+  const dateHeaders = [...new Set(subjectRecords.map(r => `${r.date} (${r.hour})`))];
+
+  const data = [
+    ["Roll No", "Name", ...dateHeaders]
+  ];
+
+  students.forEach(s => {
+    const row = [s.rollNo, s.name];
+    dateHeaders.forEach(d => {
+      const [date, hour] = d.split(" ");
+      const found = subjectRecords.find(r => r.date === date && r.hour === hour);
+      row.push(found && found.absentRollNumbers.includes(s.rollNo) ? "AB" : "P");
+    });
+    data.push(row);
+  });
+
+  const ws = XLSX.utils.aoa_to_sheet(data);
+  const wb = XLSX.utils.book_new();
+  XLSX.utils.book_append_sheet(wb, ws, "Attendance");
+
+  const fileName = `${className}_${month}.xlsx`;
+  XLSX.writeFile(wb, fileName);
+
+  document.getElementById('sheetExportStatus').innerText = `✅ ${fileName} downloaded`;
+}
+function populateAttendanceDropdowns() {
+  const classDropdown = document.getElementById('attendanceClassDropdown');
+  classDropdown.innerHTML = '<option value="">-- Select Class --</option>';
+  for (const cls in classDataMap) {
+    const opt = document.createElement('option');
+    opt.value = cls;
+    opt.textContent = cls;
+    classDropdown.appendChild(opt);
+  }
+
+  document.getElementById('attendanceSubjectDropdown').innerHTML = '<option value="">-- Select Subject --</option>';
+}
+
+function populateSubjectDropdown() {
+  const className = document.getElementById('attendanceClassDropdown').value;
+  const subjectDropdown = document.getElementById('attendanceSubjectDropdown');
+  subjectDropdown.innerHTML = '<option value="">-- Select Subject --</option>';
+
+  if (!className) return;
+
+  const subjects = new Set();
+  absenteeRecords.forEach(r => {
+    if (r.className === className) {
+      subjects.add(r.subject);
+    }
+  });
+
+  [...subjects].forEach(subject => {
+    const opt = document.createElement('option');
+    opt.value = subject;
+    opt.textContent = subject;
+    subjectDropdown.appendChild(opt);
+  });
+}
+
+function exportAttendanceToExcel() {
+  const className = document.getElementById('attendanceClassDropdown').value;
+  const subject = document.getElementById('attendanceSubjectDropdown').value;
+  const statusDiv = document.getElementById('attendanceExportStatus');
+
+  if (!className || !subject) {
+    alert("❌ Please select both class and subject before exporting.");
+    return;
+  }
+
+  const students = (classDataMap[className] || {}).students || [];
+  if (!students.length) {
+    alert("No students found in the selected class.");
+    return;
+  }
+
+  // continue rest of your code...
+
+
+  const subjectRecords = absenteeRecords.filter(r => r.className === className && r.subject === subject);
+  const uniqueEntries = [...new Set(subjectRecords.map(r => `${r.date}||${r.hour}`))];
+
+  const headerRow1 = ["Roll No", "Name", ...uniqueEntries.map(e => e.split("||")[0])];
+  const headerRow2 = ["", "", ...uniqueEntries.map(e => "Hour: " + e.split("||")[1])];
+  const data = [headerRow1, headerRow2];
+
+  students.forEach(s => {
+    const row = [s.rollNo, s.name];
+    uniqueEntries.forEach(e => {
+      const [date, hour] = e.split("||");
+      const record = subjectRecords.find(r => r.date === date && r.hour === hour);
+      const isAbsent = record?.absentRollNumbers.includes(s.rollNo);
+      row.push(isAbsent ? "AB" : "P");
+    });
+    data.push(row);
+  });
+
+  const ws = XLSX.utils.aoa_to_sheet(data);
+  const wb = XLSX.utils.book_new();
+  XLSX.utils.book_append_sheet(wb, ws, "Attendance");
+
+  const month = new Date().toLocaleString('default', { month: 'long' });
+  const fileName = `${className}, ${subject}, ${month}.xlsx`;
+  XLSX.writeFile(wb, fileName);
+
+  statusDiv.innerHTML = `<div style="margin-top:10px; padding:10px; background:#d1ffd6; border-radius:8px;">
+    ✅ <strong>${fileName}</strong> downloaded and saved.
+  </div>`;
+  
+  saveExportHistory(fileName);
+}
+
+function saveExportHistory(fileName) {
+  let exportHistory = JSON.parse(localStorage.getItem('exportHistory')) || [];
+  const now = new Date().toLocaleString();
+  exportHistory.unshift({ fileName, time: now });
+  exportHistory = exportHistory.slice(0, 50); // Limit to 50 recent
+  localStorage.setItem('exportHistory', JSON.stringify(exportHistory));
+  renderExportHistory();
+}
+
+function renderExportHistory() {
+  const container = document.getElementById('exportHistoryList');
+  if (!container) return;
+  const exportHistory = JSON.parse(localStorage.getItem('exportHistory')) || [];
+  container.innerHTML = '';
+
+  if (exportHistory.length === 0) {
+    container.innerHTML = '<p style="color: gray;">No export history yet.</p>';
+    return;
+  }
+
+  exportHistory.forEach((item, index) => {
+    const div = document.createElement('div');
+    div.className = 'export-history-item';
+    div.innerHTML = `
+      <span>📁 ${item.fileName}<br><small>${item.time}</small></span>
+      <button class="delete-history-btn" onclick="deleteExportHistory(${index})">🗑️</button>
+    `;
+    container.appendChild(div);
+  });
+}
+
+function renderUserProfile() {
+  const userData = JSON.parse(localStorage.getItem('userData')) || {};
+  const name = userData.name || '-';
+  const id = userData.userID || '-';
+
+  const classCount = Object.keys(classDataMap || {}).length;
+  const subjectSet = new Set(absenteeRecords.map(r => r.subject));
+
+  document.getElementById('profileUserName').innerText = name;
+  document.getElementById('profileUserID').innerText = id;
+  document.getElementById('profileClasses').innerText = classCount;
+  document.getElementById('profileSubjects').innerText = subjectSet.size;
+}
+
+function showPage(page) {
+  document.querySelectorAll('.page').forEach(p => p.classList.remove('active'));
+  document.getElementById(page).classList.add('active');
+  document.getElementById('sidebar').classList.remove('open');
+
+  if (page === 'userProfile') renderUserProfile();
+}
+
+function loadUserProfile() {
+  const userData = JSON.parse(localStorage.getItem('userData')) || {
+    name: "Default User",
+    userID: "25420"
+  };
+
+  document.getElementById('editUserName').value = userData.name;
+  document.getElementById('editUserID').value = userData.userID;
+
+  const photo = localStorage.getItem('profilePhoto');
+  document.getElementById('profilePhoto').src = userData.photo || defaultProfileImage;
+}
+
+function saveUserProfile() {
+  const newName = document.getElementById('editUserName').value.trim();
+  const userID = document.getElementById('editUserID').value.trim();
+
+  if (!newName || !userID) return alert("Name or User ID missing");
+
+  const updatedData = { name: newName, userID };
+  localStorage.setItem('userData', JSON.stringify(updatedData));
+  alert("✅ Profile updated!");
+}
+
+function uploadProfilePhoto(event) {
+  const file = event.target.files[0];
+  if (!file) return;
+
+  const reader = new FileReader();
+  reader.onload = () => {
+    localStorage.setItem('profilePhoto', reader.result);
+    document.getElementById('profilePhoto').src = reader.result;
+  };
+  reader.readAsDataURL(file);
+}
+
+function deleteExportHistory(index) {
+  let exportHistory = JSON.parse(localStorage.getItem('exportHistory')) || [];
+  if (!confirm(`Delete "${exportHistory[index].fileName}" from history?`)) return;
+
+  exportHistory.splice(index, 1);
+  localStorage.setItem('exportHistory', JSON.stringify(exportHistory));
+  renderExportHistory();
+}
+
+function generateUserID() {
+  return 'USER' + Math.floor(Math.random() * 1000000);
+}
+
+function toggleAuthMode() {
+  const login = document.getElementById('loginForm');
+  const register = document.getElementById('registerForm');
+  const title = document.getElementById('authTitle');
+  if (login.style.display === 'none') {
+    login.style.display = 'block';
+    register.style.display = 'none';
+    title.innerText = '🔐 Login';
+  } else {
+    login.style.display = 'none';
+    register.style.display = 'block';
+    title.innerText = '📝 Register';
+  }
+}
+
+function handleRegister() {
+  const name = document.getElementById('regName').value.trim();
+  const gmail = document.getElementById('regGmail').value.trim();
+  const pass = document.getElementById('regPass').value;
+
+  if (!name || !gmail || !pass) return alert("Fill all fields!");
+
+  const userID = generateUserID();
+  const userData = { name, userID, gmail, password: pass };
+
+  localStorage.setItem('userData', JSON.stringify(userData));
+  localStorage.setItem('isLoggedIn', 'true');
+  document.getElementById('authOverlay').style.display = 'none';
+  alert("🎉 Registered Successfully!");
+  loadUserProfile(); // optional if you have profile rendering
+  showPage('home');
+setActiveNav(document.querySelector('.bottom-nav button[data-page="home"]'));
+}
+
+function handleLogin() {
+  const input = document.getElementById('loginUserInput').value.trim();
+  const pass = document.getElementById('loginPassInput').value;
+  const stored = JSON.parse(localStorage.getItem('userData')) || {};
+
+  if (!input || !pass) return alert("Enter all login fields.");
+
+  if ((stored.name === input || stored.userID === input) && stored.password === pass) {
+  localStorage.setItem('isLoggedIn', 'true');
+  document.getElementById('authOverlay').style.display = 'none';
+  loadUserProfile(); // optional
+  showPage('home'); // 👈 Show the HOME page after login
+  setActiveNav(document.querySelector('.bottom-nav button[data-page="home"]')); // optional: highlight bottom nav
+} else {
+    alert("❌ Invalid credentials!");
+  }
+}
+
+function handleGoogleLogin() {
+  const name = prompt("Enter your Gmail name:");
+  if (!name) return;
+
+  const email = prompt("Enter your Gmail ID:");
+  if (!email || !email.includes("@gmail.com")) return alert("Enter valid Gmail ID.");
+
+  const userData = {
+    name: name.trim(),
+    gmail: email.trim(),
+    userID: generateUserID(),
+    password: 'google_auth'
+  };
+
+  localStorage.setItem('userData', JSON.stringify(userData));
+  localStorage.setItem('isLoggedIn', 'true');
+  document.getElementById('authOverlay').style.display = 'none';
+  alert("✅ Logged in via Google");
+  loadUserProfile(); // optional
+  showPage('home');
+setActiveNav(document.querySelector('.bottom-nav button[data-page="home"]'));
+}
+
+// Prevent access to app unless logged in
+window.addEventListener("load", () => {
+  const loggedIn = localStorage.getItem("isLoggedIn");
+  if (loggedIn === "true") {
+    document.getElementById("authOverlay").style.display = "none"; document.body.style.overflow = "auto";
+  } else {
+    document.getElementById("authOverlay").style.display = "flex";
+  }
+});
+
+function showPage(pageId) {
+  const pages = document.querySelectorAll('.page');
+  pages.forEach(page => page.style.display = 'none');
+  document.getElementById(pageId).style.display = 'block';
+
+  document.getElementById('sidebar').classList.remove('open'); // ✅ Hide sidebar
+
+  if (pageId === 'settings') loadSettingsPage();
+  if (pageId === 'userProfile') renderUserProfile();
+}
+
+
+function handleAddGoogleAccount() {
+  const email = prompt("Enter your Gmail address:");
+  if (!email || !email.endsWith("@gmail.com")) {
+    alert("Please enter a valid Gmail address.");
+    return;
+  }
+
+  const pin = generatePIN();
+  localStorage.setItem("pendingGmailPIN", pin);
+  localStorage.setItem("pendingGmailEmail", email);
+
+  alert(`Verification PIN: ${pin} (In real app, this would be emailed)`); // Replace with actual email logic
+
+  const userPin = prompt("Enter the PIN sent to your Gmail:");
+  if (userPin === pin) {
+    localStorage.setItem("googleAccount", email);
+    localStorage.removeItem("pendingGmailPIN");
+    localStorage.removeItem("pendingGmailEmail");
+    alert("Google account added successfully.");
+    loadSettingsPage();
+  } else {
+    alert("Incorrect PIN. Try again.");
+  }
+}
+
+function loadSettingsPage() {
+  const email = localStorage.getItem("googleAccount");
+  if (email) {
+    document.getElementById("googleEmailDisplay").innerText = email;
+    document.getElementById("addGoogleBtn").style.display = "none";
+  } else {
+    document.getElementById("googleEmailDisplay").innerText = "Not Logged In";
+    document.getElementById("addGoogleBtn").style.display = "inline-block";
+  }
+}
+
+function goToChangePassword() {
+  showPage('changePasswordPage');
+}
+
+function sendPasswordChangePIN() {
+  const email = localStorage.getItem("googleAccount");
+  if (!email) {
+    alert("Please add a Google account in Settings first.");
+    return;
+  }
+
+  const pin = generatePIN();
+  localStorage.setItem("passwordChangePIN", pin);
+
+  alert(`Verification PIN: ${pin} (In real app, this would be emailed)`); // Replace with actual email logic
+}
+
+function saveNewPassword() {
+  const enteredPin = document.getElementById("passwordChangePin").value.trim();
+  const storedPin = localStorage.getItem("passwordChangePIN");
+
+  if (enteredPin !== storedPin) {
+    alert("Incorrect PIN.");
+    return;
+  }
+
+  const newPassword = document.getElementById("newPassword").value.trim();
+  if (!newPassword) {
+    alert("Please enter a new password.");
+    return;
+  }
+
+  localStorage.setItem("userPassword", newPassword);
+  localStorage.removeItem("passwordChangePIN");
+  alert("Password changed successfully.");
+
+  showPage("settings");
+}
+
+function generatePIN(length = 6) {
+  return Math.floor(100000 + Math.random() * 900000).toString();
+}
+
+window.onload = () => {
+  const isLoggedIn = localStorage.getItem('isLoggedIn') === 'true';
+
+  if (!isLoggedIn) {
+    document.getElementById('authOverlay').style.display = 'flex';
+    return; // Stop execution if not logged in
+  }
+
+  // If logged in:
+  document.getElementById('authOverlay').style.display = 'none';
+
+  // Load everything else
+  renderClassTiles();
+  populateClassDropdown();
+  renderSavedAbsentees(absenteeRecords);
+  renderRecentHomeAbsentees();
+  populateAttendanceDropdowns();
+  renderExportHistory();
+  loadUserProfile();
+
+  // Always show HOME page after login
+  showPage('home');
+  setActiveNav(document.querySelector('.bottom-nav button[data-page="home"]'));
+  
+    // Make profile image area clickable to upload a photo
+const profilePhotoContainer = document.getElementById('profilePhotoContainer');
+const profilePhotoInput = document.getElementById('profilePhotoInput');
+
+if (profilePhotoContainer && profilePhotoInput) {
+  profilePhotoContainer.addEventListener('click', () => {
+    profilePhotoInput.click();
+  });
+
+  profilePhotoInput.addEventListener('change', (e) => {
+    const file = e.target.files[0];
+    if (!file) return;
+
+    const reader = new FileReader();
+    reader.onload = () => {
+      const userData = JSON.parse(localStorage.getItem('userData')) || {};
+      userData.photo = reader.result;
+      localStorage.setItem('userData', JSON.stringify(userData));
+      loadUserProfile(); // Update profile image immediately
+    };
+    reader.readAsDataURL(file);
+  });
+}
+
+    // TEMPORARY: Set example user data for profile page
+  if (!localStorage.getItem('userData')) {
+    localStorage.setItem('userData', JSON.stringify({
+      name: "Shankara",
+      userID: "25421"
+    }));
+  }
+
+  // Make "Click to Upload Timetable" work
+const placeholder = document.getElementById('timetablePlaceholder');
+const hiddenInput = document.getElementById('hiddenTimetableInput');
+
+if (placeholder && hiddenInput) {
+  placeholder.addEventListener('click', () => {
+    hiddenInput.click();
+  });
+}
+
+   // When anywhere inside the widget is clicked
+const timetableWidget = document.getElementById('timetableWidget');
+if (timetableWidget && hiddenInput) {
+  timetableWidget.addEventListener('click', () => {
+    hiddenInput.click();
+  });
+}
+  const now = new Date();
+  document.getElementById('currentDate').innerText = "Date: " + now.toLocaleDateString('en-IN');
+  document.getElementById('currentDay').innerText = "Day: " + now.toLocaleString('en-IN', { weekday: 'long' });
+  document.getElementById('currentTime').innerText = "Time: " + now.toLocaleTimeString('en-IN');
+
+  const savedImg = localStorage.getItem('timetableImage');
+  if (savedImg) {
+    const widget = document.getElementById('timetableWidget');
+    widget.style.backgroundImage = `url(${savedImg})`;
+    document.getElementById('timetablePlaceholder').style.display = 'none';
+  }
+
+  setActiveNav(document.querySelector(".bottom-nav button"));
+  
+  const sheetDropdown = document.getElementById('sheetClassDropdown');
+  if (sheetDropdown) {
+    sheetDropdown.innerHTML = '<option value="">Select Class</option>';
+    for (const cls in classDataMap) {
+      const opt = document.createElement('option');
+      opt.value = cls;
+      opt.textContent = cls;
+      sheetDropdown.appendChild(opt);
+    }
+  }  
+};
+</script>
+  <script>
+  // Your logout event handler here
+  document.getElementById('logoutButton').addEventListener('click', () => {
+    if (confirm("Are you sure you want to log out?")) {
+      // Clear login state
+      localStorage.setItem('isLoggedIn', 'false');
+      // Optionally clear all user data if needed:
+      // localStorage.clear();
+
+      // Redirect back to auth/login screen
+      document.getElementById('authOverlay').style.display = 'flex';
+      alert("👋 Logged out successfully!");
+    }
+  });
+</script>  
+
+<script>
+let isPanning = false, startX = 0, startY = 0, lastX = 0, lastY = 0;
+let scale = 1, startDistance = 0, initialScale = 1;
+const widget = document.getElementById('timetableWidget');
+
+// Pan
+function startPan(e) {
+  const touch = e.touches ? e.touches[0] : e;
+  isPanning = true;
+  startX = touch.clientX - lastX;
+  startY = touch.clientY - lastY;
+}
+function pan(e) {
+  if (!isPanning) return;
+  const touch = e.touches ? e.touches[0] : e;
+  lastX = touch.clientX - startX;
+  lastY = touch.clientY - startY;
+  widget.style.backgroundPosition = `${lastX}px ${lastY}px`;
+}
+function stopPan() {
+  isPanning = false;
+}
+
+// Zoom
+function getDistance(t1, t2) {
+  const dx = t2.clientX - t1.clientX;
+  const dy = t2.clientY - t1.clientY;
+  return Math.sqrt(dx * dx + dy * dy);
+}
+widget.addEventListener('touchstart', (e) => {
+  if (e.touches.length === 1) {
+    startPan(e);
+  } else if (e.touches.length === 2) {
+    startDistance = getDistance(e.touches[0], e.touches[1]);
+    initialScale = scale;
+  }
+}, { passive: false });
+
+widget.addEventListener('touchmove', (e) => {
+  if (e.touches.length === 1) {
+    pan(e);
+  } else if (e.touches.length === 2) {
+    e.preventDefault();
+    const newDistance = getDistance(e.touches[0], e.touches[1]);
+    const zoomFactor = newDistance / startDistance;
+    scale = Math.min(Math.max(initialScale * zoomFactor, 1), 5);
+    widget.style.backgroundSize = `${scale * 100}% auto`;
+  }
+}, { passive: false });
+
+widget.addEventListener('touchend', stopPan);
+widget.addEventListener('touchcancel', stopPan);
+</script>
+
+
+<script>
+(function setupTimetablePanZoom() {
+  const widget = document.getElementById("timetableWidget");
+
+  let isDragging = false;
+  let startX = 0, startY = 0, offsetX = 0, offsetY = 0;
+  let scale = 1;
+  let startDist = 0;
+  let initialScale = 1;
+
+  function setTransform() {
+    widget.style.backgroundSize = `${scale * 100}% auto`;
+    widget.style.backgroundPosition = `${offsetX}px ${offsetY}px`;
+  }
+
+  widget.addEventListener("mousedown", (e) => {
+    isDragging = true;
+    startX = e.clientX - offsetX;
+    startY = e.clientY - offsetY;
+    widget.style.cursor = "grabbing";
+  });
+
+  window.addEventListener("mousemove", (e) => {
+    if (!isDragging) return;
+    offsetX = e.clientX - startX;
+    offsetY = e.clientY - startY;
+    setTransform();
+  });
+
+  window.addEventListener("mouseup", () => {
+    isDragging = false;
+    widget.style.cursor = "grab";
+  });
+
+  // Touch support for Android
+  widget.addEventListener("touchstart", (e) => {
+    if (e.touches.length === 1) {
+      isDragging = true;
+      startX = e.touches[0].clientX - offsetX;
+      startY = e.touches[0].clientY - offsetY;
+    } else if (e.touches.length === 2) {
+      startDist = Math.hypot(
+        e.touches[0].clientX - e.touches[1].clientX,
+        e.touches[0].clientY - e.touches[1].clientY
+      );
+      initialScale = scale;
+    }
+  }, { passive: false });
+
+  widget.addEventListener("touchmove", (e) => {
+    if (e.touches.length === 1 && isDragging) {
+      e.preventDefault();
+      offsetX = e.touches[0].clientX - startX;
+      offsetY = e.touches[0].clientY - startY;
+      setTransform();
+    } else if (e.touches.length === 2) {
+      e.preventDefault();
+      const newDist = Math.hypot(
+        e.touches[0].clientX - e.touches[1].clientX,
+        e.touches[0].clientY - e.touches[1].clientY
+      );
+      scale = Math.min(Math.max(initialScale * (newDist / startDist), 1), 4);
+      setTransform();
+    }
+  }, { passive: false });
+
+  widget.addEventListener("touchend", () => {
+    isDragging = false;
+  });
+
+  // Load image if already saved
+  const saved = localStorage.getItem("timetableImage");
+  if (saved) {
+    widget.style.backgroundImage = `url(${saved})`;
+    document.getElementById('timetablePlaceholder').style.display = 'none';
+    setTransform();
+  }
+})();
+</script>
+
+
+<style>
+select {
+  width: 100%;
+  padding: 12px;
+  border: 1px solid #ccc;
+  border-radius: 8px;
+  font-size: 16px;
+  background-color: white;
+  color: #000;
+  appearance: auto;
+  -webkit-appearance: auto;
+  -moz-appearance: auto;
+}
+</style>
+
+<script>
+document.querySelectorAll('select').forEach(select => {
+  select.addEventListener('touchstart', e => {
+    e.stopPropagation();
+  }, { passive: true });
+});
+</script>
+</body>
+ 
+</html>
+    
